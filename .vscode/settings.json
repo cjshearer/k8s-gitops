@@ -1,0 +1,12 @@
+{
+  "yaml.schemas": {
+    "https://taskfile.dev/schema.json": "file:///home/cjshearer/repos/k8s-gitops/.taskfiles/*.yaml"
+  },
+  "terminal.integrated.profiles.linux": {
+    "bash": {
+      "path": "bash",
+      "icon": "terminal-bash",
+      "args": ["--init-file", ".vscode/init.sh"]
+    }
+  }
+}

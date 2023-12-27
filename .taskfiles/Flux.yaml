@@ -1,0 +1,23 @@
+version: "3"
+
+tasks:
+  bootstrap:
+    desc: Deploys the Flux controllers on the cluster
+    summary: |
+      Runs the bootstrapping process for flux, creating the controllers and
+      configuring in-cluster secrets decryption.
+    dir: "{{.FLUX_DIR}}"
+    interactive: true
+    preconditions:
+      - sh: test -f {{.SOPS_AGE_KEY_FILE}}
+        msg: SOPS_AGE_KEY_FILE is missing
+    cmds:
+      - kubectl create namespace flux-system || true
+      - kubectl delete secret sops-age --namespace=flux-system || true
+      - kubectl create secret generic sops-age
+        --namespace=flux-system
+        --from-file=age.agekey={{.SOPS_AGE_KEY_FILE}}
+      - flux bootstrap git
+        --ssh-key-algorithm=ed25519
+        --path=kubernetes
+        --url={{.GIT_URL}}

@@ -1,0 +1,20 @@
+---
+clusterName: homelab
+talosVersion: v1.6.1
+kubernetesVersion: v1.29.0
+allowSchedulingOnControlPlanes: true
+endpoint: https://aeolus:6443
+nodes:
+  - hostname: aeolus
+    ipAddress: aeolus
+    controlPlane: true
+    installDisk: /dev/nvme0n1
+    schematic:
+      customization:
+        systemExtensions:
+          officialExtensions:
+            - siderolabs/amdgpu-firmware
+            - siderolabs/intel-ucode
+            - siderolabs/tailscale
+patches:
+  - "@./patch-tailscale-underlay.yaml"

@@ -1,0 +1,50 @@
+version: "3"
+
+tasks:
+  default:
+    cmd: talosctl {{.CLI_ARGS}}
+
+  apply-config:
+    desc: Apply talos config on a node
+    deps: [genconfig]
+    dir: "{{.TALOS_CLUSTER_CONFIG}}"
+    requires:
+      vars: [node]
+    cmds:
+      - talosctl -n {{.node}} apply-config -f homelab-{{.node}}.yaml
+
+  bootstrap:
+    desc: Bootstrap talos cluster
+    deps: [genconfig]
+    dir: "{{.TALOS_CLUSTER_CONFIG}}"
+    requires:
+      vars: [node]
+    cmd: talosctl bootstrap -n {{.node}} -e {{.node}}
+
+  genconfig:
+    desc: Generate talos config
+    dir: "{{.TALOS_DIR}}"
+    cmd: talhelper genconfig
+    sources: ["*.yaml"]
+    generates: ["clusterconfig/*"]
+
+  genkubeconfig:
+    desc: Download the admin kubeconfig from the node
+    dir: "{{.TALOS_DIR}}"
+    requires:
+      vars: [node]
+    cmd: talosctl kubeconfig -n {{.node}} {{.KUBECONFIG}}
+
+  gensecret:
+    desc: Generate encrypted secrets to communicate with a new Talos cluster
+    dir: "{{.TALOS_DIR}}"
+    status:
+      - test -f talsecret.sops.yaml
+    cmd: talhelper gensecret | sops -e --input-type yaml --output-type yaml
+      /dev/stdin > talsecret.sops.yaml
+
+  genurl-iso:
+    desc: Generate URL for Talos ISO image
+    deps: [genconfig]
+    dir: "{{.TALOS_DIR}}"
+    cmd: talhelper genurl iso

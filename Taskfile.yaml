@@ -1,0 +1,32 @@
+version: "3"
+dotenv: ["workstation.env"]
+
+env:
+  GIT_EMAIL: cjshearer@live.com
+  GIT_REPO_NAME: k8s-gitops
+  GIT_URL: ssh://git@github.com/cjshearer/{{.GIT_REPO_NAME}}.git
+  KUBERNETES_DIR: "{{.ROOT_DIR}}/kubernetes"
+  KUBECONFIG: "{{.KUBERNETES_DIR}}/kubeconfig"
+  FLUX_DIR: "{{.KUBERNETES_DIR}}/flux-system"
+  SOPS_AGE_KEY_FILE: "{{.ROOT_DIR}}/age.key"
+  TALOS_DIR: "{{.ROOT_DIR}}/talos"
+  TALOS_CLUSTER_CONFIG: "{{.TALOS_DIR}}/clusterconfig"
+  TALOSCONFIG: "{{.TALOS_CLUSTER_CONFIG}}/talosconfig"
+
+tasks:
+  default: task -l
+
+  env:
+    desc: Load env vars with `source <(task env)`
+    silent: true
+    cmd: |
+      echo "
+      export KUBECONFIG={{.KUBECONFIG}}
+      export SOPS_AGE_KEY_FILE={{.SOPS_AGE_KEY_FILE}}
+      export TALOSCONFIG={{.TALOSCONFIG}}
+      "
+
+includes:
+  flux: ./.taskfiles/Flux.yaml
+  talos: ./.taskfiles/Talos.yaml
+  workstation: ./.taskfiles/Workstation.yaml

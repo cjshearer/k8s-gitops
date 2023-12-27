@@ -1,0 +1,101 @@
+version: "3"
+
+tasks:
+  default:
+    aliases: [install]
+    desc: Install workstation dependencies
+    summary: |
+      These utilities are used for configuring and accessing the cluster. They
+      are intended to be installed on a workstation, not a node in the cluster.
+    deps:
+      - age-install
+      - flux-install
+      - kubectl-install
+      - kustomize-install
+      - sops-differ
+      - sops-install
+      - talhelper-install
+      - talosctl-install
+
+  age-install:
+    desc: Install age
+    summary: |
+      age (https://age-encryption.org/) is a "simple, modern and secure
+      encryption tool". It is used to generate a symmetric key for encrypting
+      secrets stored in git.
+    run: once
+    status:
+      - command -v age
+    cmds:
+      - task: apt-upgrade
+      - sudo apt install age -y
+
+  apt-upgrade:
+    desc: Updates and upgrades packages with apt
+    run: once
+    silent: true
+    cmds:
+      - sudo apt update
+      - sudo apt upgrade -y
+
+  flux-install:
+    desc: Installs the flux CLI
+    summary: |
+      Flux is a set of continuous and progressive delivery solutions for
+      Kubernetes. We use the CLI to simplify bootstrapping flux into the
+      cluster.
+    run: once
+    status:
+      - command -v flux
+    cmd: curl -s https://fluxcd.io/install.sh | sudo bash
+
+  kubectl-install:
+    desc: Installs kubectl
+    dir: /tmp/
+    run: once
+    status:
+      - command -v kubectl
+    cmds:
+      - curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+      - defer: rm kubectl
+      - sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+  kustomize-install:
+    desc: Installs kustomize
+    dir: /usr/local/bin
+    run: once
+    status:
+      - command -v kustomize
+    cmd: curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | sudo bash
+
+  sops-install:
+    desc: Installs SOPS
+    dir: /tmp/
+    run: once
+    status:
+      - command -v sops
+    cmds:
+      - curl -LO https://github.com/getsops/sops/releases/download/v3.8.1/sops-v3.8.1.linux.amd64
+      - defer rm sops-v3.8.1.linux.amd64
+      - sudo install sops-v3.8.1.linux.amd64 /usr/local/bin/sops
+
+  sops-differ:
+    desc: Adds git configuration for diffing with SOPS
+    deps: [sops-install]
+    status:
+      - grep -A 1 sopsdiffer .git/config
+    cmd: git config diff.sopsdiffer.textconv "sops -d"
+
+  talosctl-install:
+    desc: Installs talosctl
+    run: once
+    status:
+      - command -v talosctl
+    cmd: curl -sL https://talos.dev/install | sh
+
+  talhelper-install:
+    desc: Installs talhelper
+    run: once
+    status:
+      - command -v talhelper
+    cmd: curl https://i.jpillora.com/budimanjojo/talhelper! | sudo bash

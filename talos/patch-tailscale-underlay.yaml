@@ -1,0 +1,10 @@
+# https://github.com/siderolabs/extensions/tree/main/network/tailscale
+machine:
+  files:
+    - content: |
+        TS_AUTHKEY=${TAILSCALE_AUTHKEY}
+        TS_ACCEPT_DNS=true
+        TS_AUTH_ONCE=true
+      permissions: 0o644
+      path: /var/etc/tailscale/auth.env
+      op: create
