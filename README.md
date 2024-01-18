@@ -31,7 +31,7 @@ task workstation:install
 
 ## Bootstrapping Cluster
 
-This guide assumes you are starting from scratch and will run a single node on bare-metal.
+This guide assumes you are starting from scratch and will run a single node on bare-metal. It also assumes you have already created a remote copy of this repo and cloned it.
 
 ### Talos
 
@@ -39,7 +39,8 @@ This guide is intended to complement the [talhelper guide](https://budimanjojo.g
 
 1. Select your [system extensions](https://github.com/siderolabs/extensions) in `talos/talconfig.yaml`.
 
-   > [!NOTE] My machine has an Intel CPU and AMD GPU, so I included `intel-ucode` and `amdgpu-firmware`. I also use [`tailscale`](https://github.com/siderolabs/extensions/tree/main/network/tailscale) to handle networking and provide secure access to the node.
+   > [!NOTE]
+   > My machine has an Intel CPU and AMD GPU, so I included `intel-ucode` and `amdgpu-firmware`. I also use [`tailscale`](https://github.com/siderolabs/extensions/tree/main/network/tailscale) to handle networking and provide secure access to the node.
 
 2. Flash the ISO from `task talos:genurl-iso` on a USB drive and boot into that on your new node.
 
@@ -63,3 +64,29 @@ This guide is intended to complement the [talhelper guide](https://budimanjojo.g
 7. To authenticate the new node with tailscale, [generate an auth key](https://login.tailscale.com/admin/settings/keys) with a tag (e.g. `tag:server`) to disable key expiry. If you want the auth key to be reusable, it should be stored in `talenv.sops.yaml`. Otherwise, delete `talenv.sops.yaml` and `export TAILSCALE_AUTHKEY=<your authkey>` in your shell.
 
 8. Using your new node's local IP address, generate the talos config and initiate the bootstrapping process with `node=<new node IP address> task talos:bootstrap`. It may take several minutes for this to finish (watch the node's logs for errors). You should eventually see the machine has [joined the tailnet](https://login.tailscale.com/admin/machines).
+
+## Flux
+
+With our node operational, we can bootstrap flux...
+
+> [!IMPORTANT]
+> Your ssh-agent must be configured with access to your repo.
+
+```sh
+task flux:bootstrap
+# namespace/flux-system created
+# ...
+# ✔ source-controller: deployment ready
+# ✔ all components are healthy
+```
+
+...and verify its controllers are running
+
+```sh
+kubectl -n flux-system get pods
+# NAME                                       READY   STATUS    RESTARTS   AGE
+# helm-controller-58d5cc6f5b-ssbtx           1/1     Running   0          84m
+# kustomize-controller-d84b877fb-zp67f       1/1     Running   0          84m
+# notification-controller-77fd94d6d4-4sbrc   1/1     Running   0          84m
+# source-controller-7657cffdb-5zdwc          1/1     Running   0          84m
+```

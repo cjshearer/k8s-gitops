@@ -8,6 +8,7 @@ tasks:
       configuring in-cluster secrets decryption.
     dir: "{{.FLUX_DIR}}"
     interactive: true
+    silent: true
     preconditions:
       - sh: test -f {{.SOPS_AGE_KEY_FILE}}
         msg: SOPS_AGE_KEY_FILE is missing
