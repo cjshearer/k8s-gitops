@@ -73,6 +73,9 @@ With our node operational, we can bootstrap flux...
 > Your ssh-agent must be configured with access to your repo.
 
 ```sh
+# We need the admin kubeconfig from talos to communicate with the k8s api
+node=<node-hostname> task talos:genkubeconfig
+
 task flux:bootstrap
 # namespace/flux-system created
 # ...
